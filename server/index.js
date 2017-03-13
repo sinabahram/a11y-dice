@@ -5,6 +5,8 @@ var app = require('express')();
 var bodyParser = require('body-parser');
 // app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.set('view engine', 'ejs');
+
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
@@ -12,12 +14,8 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-app.post('/', function(req, res){
-console.log('Got post request for player: '+req.body.playerName+' and room: '+req.body.roomName);
-res.redirect('/roller?name='+playerName+'&roomName='+roomName);
-});
-
-app.get('/roller', function(req, res){
+app.post('/roller', function(req, res){
+console.log('Got post request for /roller with player: '+req.body.playerName+' and room: '+req.body.roomName);
   res.sendFile(__dirname + '/roller.html');
 });
 
