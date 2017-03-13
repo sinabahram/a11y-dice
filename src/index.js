@@ -15,7 +15,7 @@ app.get('/', function(req, res){
 });
 
 app.post('/roller', function(req, res){
-roomName = req.body.roomName;
+var roomName = req.body.roomName,
 playerName = req.body.playerName;
 
 console.log('Got post request for /roller with player: '+playerName+' and room: '+roomName);
