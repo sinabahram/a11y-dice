@@ -2,7 +2,7 @@
   "name": "a11y-dice",
   "version": "0.0.1",
   "description": "An accessible dice roller",
-  "dependencies": {}
+  "dependencies": {
+    "express": "^4.15.2"
+  }
 }
-      
-
