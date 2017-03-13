@@ -2,11 +2,6 @@
 <html>
 <head>
 <title>A11y Dice</title>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io();
-</script>
-
 </head>
 
 <body>
@@ -15,11 +10,17 @@
 Enter your room name below to get started.
 </p>
 
-<form action="">
+<form action="/roller" method="post">
+<label for="playerName">
+Player Name:
+</label>
+<input id="playerName" type="text" />
+
 <label for="roomName">
 Room Name:
 </label>
 <input id="roomName" type="text" />
+
 <button>Join Room</button>
 </form>
 

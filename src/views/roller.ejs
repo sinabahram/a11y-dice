@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<title>Dice Roller - <%= roomName %></title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+</script>
+</head>
+
+<body>
+<h1><%= roomName %></h1>
+<p>
+Hi <%= playerName %>. This screen lets you roll dice and see the results of everyone else's dice rolls.
+</p>
+
+<h2>Roll Dice</h2>
+<form action="">
+<label for="command">
+Command
+</label>
+<input id="command" type="text" />
+<button>Roll</button>
+</form>
+
+<h2>Results</h2>
+<ul id="results">
+</ul>
+
+<h2>Players</h2>
+<ul id="players">
+</ul>
+
+</body>
+</html>

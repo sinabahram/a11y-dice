@@ -11,12 +11,18 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  res.render('index');
 });
 
 app.post('/roller', function(req, res){
-console.log('Got post request for /roller with player: '+req.body.playerName+' and room: '+req.body.roomName);
-  res.sendFile(__dirname + '/roller.html');
+roomName = req.body.roomName;
+playerName = req.body.playerName;
+
+console.log('Got post request for /roller with player: '+playerName+' and room: '+roomName);
+  res.render('roller', {
+roomName: roomName,
+playerName: playerName
+});
 });
 
 io.on('connection', function(socket){
