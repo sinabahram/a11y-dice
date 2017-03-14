@@ -57,6 +57,7 @@ socket.on('join', onJoin);
 socket.on('players', onPlayers);
 socket.on('leave', onLeave);
 socket.on('results', onResults);
+socket.on('invalid', onInvalid);
 
 function onJoin(msg) {
 addPlayer(msg.playerName);
@@ -84,13 +85,17 @@ say('There are '+playerNames.length+' other players signed on');
 }
 
 function onResults(msg) {
-var playerName = msg.playerName, roomName = msg.roomName, result = msg.result;
+var playerName = msg.playerName, result = msg.result, command = msg.command;
 
 var res = document.createElement('li');
-res.innerHTML = playerName+" ==> "+result;
-results.appendChild(res);
+res.innerHTML = playerName+': '+command+' = '+result;
+results.insertBefore(res, results.firstChild);
 
-say('new roll: '+playerName+' got '+result);
+say('new roll: '+playerName+' rolled '+command.replace('-', ' minus ')+', and got '+result);
+}
+
+function onInvalid(msg) {
+alert(msg.reason);
 }
 
 function addPlayer(playerName) {
@@ -110,9 +115,9 @@ socket.emit('join', {playerName: playerName, roomName: roomName});
 </head>
 
 <body>
-<h1>Welcome</h1>
+<h1>Welcome to <%= roomName %></h1>
 <p>
-Hi <%= playerName %>, welcome to the <%= roomName %> room. This screen lets you roll dice and see the results of everyone else's dice rolls. The field below can take commands such as:
+Hi <%= playerName %>, this screen lets you roll dice and see the results of everyone else's dice rolls. The field below can take commands such as:
 </p>
 
 <h3>Example Commands</h3>

@@ -36,11 +36,15 @@ for(var id in players) {
 playerNames.push(players[id].playerName);
 }
 
-console.log('sending player names: '+playerNames);
+console.log('sending player names: '+playerNames+' to '+socket.handshake.address);
 socket.emit('players', {playerNames: playerNames});
+
 });
 
 function onDisconnect(socket) {
+if(!(socket.id in players))
+return;
+
 console.log(players[socket.id].playerName+' left '+players[socket.id].roomName);
 io.sockets.in(players[socket.id].roomName).emit('leave', {playerName: players[socket.id].playerName});
 delete players[socket.id];
@@ -59,12 +63,57 @@ players[socket.id].roomName = msg.roomName;
 function onCommand(socket, msg) {
 var playerName = msg.playerName,
 roomName = msg.roomName,
-command = msg.command;
+command = msg.command.trim();
 
 console.log('in '+roomName+': onCommand from '+playerName+': '+command);
 
-var result = "5";
-io.sockets.in(roomName).emit('results', {playerName: playerName, result: result});
+var matches = /(\d{1,2})[dD](\d{1,3})([+-]\d{1,3})?/.exec(command);
+if(matches) {
+//for(var i=0; i<matches.length; i++)
+//console.log(i+': '+matches[i]+', '+typeof matches[i]);
+
+if(parseInt(matches[1]) < 1) {
+socket.emit('invalid', {reason: "Can't roll 0 dice"});
+return;
+}
+
+var result = rollDice(matches[1], matches[2], matches[3]);
+io.sockets.in(roomName).emit('results', {playerName: playerName, result: result, command: command});
+}
+else
+socket.emit('invalid', {reason: 'Invalid dice roll command'});
+}
+
+function rollDice(numDice, sides, modifier) {
+var result = "(", total=0;
+var flag = false;
+for(var i=0; i<numDice; i++) {
+if(flag)
+result += ", ";
+
+var val = getRandomIntInclusive(1, sides);
+result += val;
+total += val;
+flag = true;
+}
+
+if(modifier) {
+var mod = 1;
+if(modifier.substr(0,1) == '-') {
+mod = -1;
+}
+
+total += mod*parseInt(modifier.substr(1));
+}
+
+result += ") = "+total;
+return result;
+}
+
+function getRandomIntInclusive(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 http.listen(port, function(){
