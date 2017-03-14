@@ -1,21 +1,129 @@
 <!doctype html>
 <html>
 <head>
+
+<style>
+.offscreen {
+clip: rect(1px, 1px, 1px, 1px);
+    clip-path: polygon(0px 0px, 0px 0px,0px 0px, 0px 0px);
+    position: absolute !important;
+    white-space: nowrap;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+}
+
+</style>
+
 <title>Dice Roller - <%= roomName %></title>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+function say(str) {
+document.getElementById("say").innerHTML = str;
+}
+
+var playerName = "<%= playerName %>";
+var roomName = "<%= roomName %>";
+var commandField = {};
+var players = {};
+var results = {};
+
   var socket = io();
+
+function processForm(e) {
+    if (e.preventDefault) e.preventDefault();
+sendCommandToServer();
+    return false;
+}
+
+window.onload=function() {
+commandField = document.getElementById('command');
+players = document.getElementById('players');
+results = document.getElementById('results');
+
+var form = document.getElementById('commandForm');
+if (form.attachEvent) {
+    form.attachEvent("submit", processForm);
+} else {
+    form.addEventListener("submit", processForm);
+}
+}
+
+function sendCommandToServer() {
+socket.emit('command', {playerName: playerName, roomName: roomName, command: commandField.value});
+}
+
+socket.on('join', onJoin);
+socket.on('players', onPlayers);
+socket.on('leave', onLeave);
+socket.on('results', onResults);
+
+function onJoin(msg) {
+addPlayer(msg.playerName);
+say(msg.playerName+' joined '+roomName);
+}
+
+function onLeave(msg) {
+var playerName = msg.playerName;
+
+var playerID = 'player-'+playerName;
+var player = document.getElementById(playerID);
+if(player) {
+player.outerHTML = "";
+say(playerName+' left '+roomName);
+}
+}
+
+function onPlayers(msg) {
+var playerNames = msg.playerNames;
+for(var i=0; i<playerNames.length; i++) {
+addPlayer(playerNames[i]);
+}
+
+say('There are '+playerNames.length+' other players signed on');
+}
+
+function onResults(msg) {
+var playerName = msg.playerName, roomName = msg.roomName, result = msg.result;
+
+var res = document.createElement('li');
+res.innerHTML = playerName+" ==> "+result;
+results.appendChild(res);
+
+say('new roll: '+playerName+' got '+result);
+}
+
+function addPlayer(playerName) {
+var playerID = 'player-'+playerName;
+var player = document.getElementById(playerID);
+if(player)
+return;
+
+player = document.createElement('li');
+player.setAttribute('id', playerID);
+player.innerHTML = playerName;
+players.appendChild(player);
+}
+
+socket.emit('join', {playerName: playerName, roomName: roomName});
 </script>
 </head>
 
 <body>
-<h1><%= roomName %></h1>
+<h1>Welcome</h1>
 <p>
-Hi <%= playerName %>. This screen lets you roll dice and see the results of everyone else's dice rolls.
+Hi <%= playerName %>, welcome to the <%= roomName %> room. This screen lets you roll dice and see the results of everyone else's dice rolls. The field below can take commands such as:
 </p>
 
+<h3>Example Commands</h3>
+<ul>
+<li>2d5 - Rolls two 5-sided dice</li>
+<li>d6 - Rolls one 6-sided die</li>
+<li>3d20+7 - Rolls three 20-sided dice and adds 7 to the total</li>
+</ul>
+
 <h2>Roll Dice</h2>
-<form action="">
+<form id="commandForm">
 <label for="command">
 Command
 </label>
@@ -30,6 +138,12 @@ Command
 <h2>Players</h2>
 <ul id="players">
 </ul>
+
+<br />
+<br />
+
+<div id="say" class="offscreen" aria-live="assertive">
+</div>
 
 </body>
 </html>
